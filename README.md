@@ -1,4 +1,4 @@
-# 3DprintfromFreeSurfer
+# 3D Print from FreeSurfer
 
 Note that this requires FreeSurfer installed (version >7.4 is best): https://surfer.nmr.mgh.harvard.edu/fswiki/rel7downloads.
 
@@ -31,3 +31,6 @@ pip install --install-option="--prefix=/some/path/" package_name
    ```
    python 3Dprintprep.py --i ./fsqc_out/brainprint/jt2021/surfaces --o ./fsqc_out/brainprint/jt2021/jt2021.stl
    ```
+
+##Post-processing
+You can use 3D modeling software of your choice to do any additional processing as needed. I typically import the STL into 3D Builder on Windows 10 or Windows 11, fix errors (pop-up when importing), and then "settle" the brain to have it rest on the medulla and temporal lobes (typically the auto settle in 3D Builder works well).
