@@ -6,3 +6,7 @@ Steps to run:
 3. Run the script like this (change the input directory and output file): python 3Dprintprep.py --i ./fsqc_out/brainprint/jt2021/surfaces --o ./fsqc_out/brainprint/jt2021/jt2021.stl
 
 Note that this requires FreeSurfer installed, FSQC: `pip install fsqc`, and various Python packages: `pip install pymeshlab vtk stl`
+
+It's likely best to run all this within a set Python environment. Instructions to do that are not included here.
+
+If on a cluster computer, check documentation for running. You likely can pip install packages but might need to specify install location: `pip install --install-option="--prefix=/some/path/" package_name`
