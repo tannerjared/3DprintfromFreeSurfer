@@ -7,6 +7,8 @@ FSQC (https://github.com/Deep-MI/fsqc) and various Python packages also need to 
 pip install fsqc pymeshlab vtk stl
 ```
 
+Note: it's better to use something like Conda/Mamba to install and manage a virtual python environment for this, especially if running on a cluster computer: https://help.rc.ufl.edu/doc/Managing_Python_environments_and_Jupyter_kernels
+
 Steps to run:
 1. Process a brain MRI using FreeSufer (version >7.4 is best).
 2. Run FSQC with the --shape flag. An example looks like this (this runs on one subject, if you want this for all processed subjects, leave off the --subjects flag)
@@ -29,5 +31,3 @@ If on a cluster computer, check documentation for running. You likely can pip in
 ```
 pip install --install-option="--prefix=/some/path/" package_name
 ```
-
-It's much better to use something like Conda/Mamba to install and manage a virtual python environment for this: https://help.rc.ufl.edu/doc/Managing_Python_environments_and_Jupyter_kernels
