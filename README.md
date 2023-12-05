@@ -2,14 +2,14 @@
 
 Note that this requires FreeSurfer installed (version >7.4 is best): https://surfer.nmr.mgh.harvard.edu/fswiki/rel7downloads.
 
-FSQC and various Python packages also need to be installed:
+FSQC (https://github.com/Deep-MI/fsqc) and various Python packages also need to be installed (if you want to install fsqc a different way, check the link for options):
 ```
 pip install fsqc pymeshlab vtk stl
 ```
 
 Steps to run:
 1. Process a brain MRI using FreeSufer (version >7.4 is best).
-2. Run FSQC (https://github.com/Deep-MI/fsqc) with the --shape flag. An example looks like this (this runs on one subject, if you want this for all processed subjects, leave off the --subjects flag)
+2. Run FSQC with the --shape flag. An example looks like this (this runs on one subject, if you want this for all processed subjects, leave off the --subjects flag)
    ```
    run_fsqc --subjects_dir ./fs_subjects --subjects jt2021 --output_dir ./fsqc_out --shape
    ```
