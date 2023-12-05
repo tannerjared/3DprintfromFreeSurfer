@@ -10,7 +10,7 @@ Note that this requires FreeSurfer installed, FSQC and various Python packages: 
 It's likely best to run all this within a Python virtual environment. Instructions to do that are not included here but generally would look like this
 
 ```virtualenv /path/to/virtual/environment
-source /path/to/virtual/environment/bin/activate```
-
+source /path/to/virtual/environment/bin/activate
+```
 If on a cluster computer, check documentation for running. You likely can pip install packages but might need to specify install location:
 ```pip install --install-option="--prefix=/some/path/" package_name```
