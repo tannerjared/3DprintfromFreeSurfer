@@ -19,7 +19,7 @@ If on a cluster computer, check documentation for running. You likely can pip in
 pip install --install-option="--prefix=/some/path/" package_name
 ```
 
-## Steps to run:
+## Steps to run
 1. Process a brain MRI using FreeSufer (version >7.4 is best).
 2. Run FSQC with the --shape flag. An example looks like this (this runs on one subject, if you want this for all processed subjects, leave off the --subjects flag)
    ```
