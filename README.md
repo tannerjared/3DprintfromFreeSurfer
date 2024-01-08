@@ -14,7 +14,7 @@ FSQC (https://github.com/Deep-MI/fsqc) and various Python packages also need to 
 pip install fsqc pymeshlab vtk stl
 ```
 
-If on a cluster computer, check documentation for running. You likely can pip install packages but might need to specify install location (it's probably best if you do):
+If on a cluster computer, check documentation for running. You likely can pip install packages (although it's likely better to use Conda or similar) but might need to specify install location (it's probably best if you do):
 ```
 pip install --install-option="--prefix=/some/path/" package_name
 ```
