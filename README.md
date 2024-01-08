@@ -3,7 +3,7 @@
 Note that this requires FreeSurfer installed (version >7.4 is best but >6.0 should work): https://surfer.nmr.mgh.harvard.edu/fswiki/rel7downloads.
 
 Note: it's better to use something like Conda/Mamba to install and manage a virtual python environment for this, especially if running on a cluster computer: https://help.rc.ufl.edu/doc/Managing_Python_environments_and_Jupyter_kernels
-Instructions to do that are not included here but generally would look like this (or check the documentation above for other options.
+Instructions to do that are not included here but generally would look like this, or check the documentation above for other options.
 ```
 virtualenv /path/to/virtual/environment
 source /path/to/virtual/environment/bin/activate
