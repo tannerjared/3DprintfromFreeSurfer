@@ -94,8 +94,8 @@ def combine_and_save_brain(input_directory, output_filename):
 
 def main():
     parser = argparse.ArgumentParser(description='Combine specified STL files and apply smoothing.')
-    parser.add_argument('--i', dest='input_directory', required=True, help='Input directory containing STL files')
-    parser.add_argument('--o', dest='output_filename', required=True, help='Output combined and cleaned STL file')
+    parser.add_argument('input_directory', type=str, help='Input directory containing STL files')
+    parser.add_argument('output_filename', type=str, help='Output combined and cleaned STL file')
 
     args = parser.parse_args()
 
