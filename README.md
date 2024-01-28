@@ -11,7 +11,7 @@ source /path/to/virtual/environment/bin/activate
 
 FSQC (https://github.com/Deep-MI/fsqc) and various Python packages also need to be installed (if you want to install fsqc a different way, check the link for options):
 ```
-pip install fsqc pymeshlab vtk stl
+pip install fsqc numpy-stl pymeshlab==2022.2.post4 vtk
 ```
 
 If on a cluster computer, check documentation for running. You likely can pip install packages (although it's likely better to use Conda or similar) but might need to specify install location (it's probably best if you do):
@@ -31,6 +31,18 @@ pip install --install-option="--prefix=/some/path/" package_name
    ```
    python 3Dprintprep.py --i ./fsqc_out/brainprint/jt2021/surfaces --o ./fsqc_out/brainprint/jt2021/jt2021.stl
    ```
+
+## Docker alternative
+Steps are as above but use the Docker container (update paths to where the surfaces directory created by FSQC is)
+```
+docker run --rm -v $PWD/surfaces/:/in -v $PWD/fsqc_out/:/out jjtanner/3dprintprep:latest /in /out/sub-001.stl
+```
+
+## Singularity alternative
+```
+singularity build 3dprintprep.sif docker://jjtanner/3dprintprep:latest
+singularity run -B $PWD/surfaces/:/in -B $PWD:/out 3dprintprep.sif /in /out/sub-001.stl
+```
 
 ## Post-processing
 You can use 3D modeling software of your choice to do any additional processing as needed. I typically import the STL into 3D Builder on Windows 10 or Windows 11, fix errors (pop-up when importing), and then "settle" the brain to have it rest on the medulla and temporal lobes (typically the auto settle in 3D Builder works well).
