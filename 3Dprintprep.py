@@ -68,46 +68,14 @@ def combine_cortex(input_directory):
 
 
 def combine_non_cortex(input_directory):
+    """Combine all non-cortical structures and smooth them together."""
 
-    # ---------------------------------------------------------
-    # 1. Cerebellum + brainstem: LIGHT smoothing
-    # ---------------------------------------------------------
-    cerebellum_files = [
-        'aseg.final.7_8_16_46_47.stl'
-    ]
+    ms = pymeshlab.MeshSet()
 
-    cerebellum_ms = pymeshlab.MeshSet()
-
-    for filename in cerebellum_files:
-        cerebellum_ms.load_new_mesh(
-            os.path.join(input_directory, filename)
-        )
-
-    cerebellum_ms.apply_filter(
-        'generate_by_merging_visible_meshes',
-        mergevertices=True
-    )
-
-    # Light smoothing to preserve cerebellar folia
-    percentage_delta = pymeshlab.PercentageValue(0.1)
-
-    cerebellum_ms.apply_filter(
-        'apply_coord_laplacian_smoothing_scale_dependent',
-        stepsmoothnum=100,
-        delta=percentage_delta
-    )
-
-    cerebellum_output = os.path.join(
-        input_directory,
-        'cerebellum_brainstem_smoothed.stl'
-    )
-
-    cerebellum_ms.save_current_mesh(cerebellum_output)
-
-    # ---------------------------------------------------------
-    # 2. Other subcortical structures
-    # ---------------------------------------------------------
-    subcortical_files = [
+    # Cerebellum, brainstem, subcortical structures, and corpus callosum.
+    # CSF / ventricular surface aseg.final.14_24 is intentionally excluded.
+    non_cortex_files = [
+        'aseg.final.7_8_16_46_47.stl',
         'aseg.final.10.stl',
         'aseg.final.11_12_26.stl',
         'aseg.final.13.stl',
@@ -124,53 +92,40 @@ def combine_non_cortex(input_directory):
         'aseg.final.251_252_253_254_255.stl'
     ]
 
-    subcortical_ms = pymeshlab.MeshSet()
-
-    for filename in subcortical_files:
-        subcortical_ms.load_new_mesh(
+    # Load all non-cortical structures
+    for filename in non_cortex_files:
+        ms.load_new_mesh(
             os.path.join(input_directory, filename)
         )
 
-    subcortical_ms.apply_filter(
+    # Merge everything before smoothing
+    ms.apply_filter(
         'generate_by_merging_visible_meshes',
         mergevertices=True
     )
 
-    subcortical_ms.apply_filter(
+    # Save the merged but unsmoothed non-cortex mesh
+    output_non_cortex = os.path.join(
+        input_directory,
+        'non-cortex.stl'
+    )
+    ms.save_current_mesh(output_non_cortex)
+
+    # Smooth the entire non-cortex mesh together
+    percentage_delta = pymeshlab.PercentageValue(0.1)
+
+    ms.apply_filter(
         'apply_coord_laplacian_smoothing_scale_dependent',
         stepsmoothnum=100,
         delta=percentage_delta
     )
 
-    subcortical_output = os.path.join(
-        input_directory,
-        'subcortical_smoothed.stl'
-    )
-
-    subcortical_ms.save_current_mesh(subcortical_output)
-
-
-    # ---------------------------------------------------------
-    # 3. Merge the already-smoothed components
-    #    DO NOT smooth after this step.
-    # ---------------------------------------------------------
-    final_ms = pymeshlab.MeshSet()
-
-    final_ms.load_new_mesh(cerebellum_output)
-    final_ms.load_new_mesh(subcortical_output)
-
-    final_ms.apply_filter(
-        'generate_by_merging_visible_meshes',
-        mergevertices=True
-    )
-
+    # Save smoothed result
     output_non_cortex_smoothed = os.path.join(
         input_directory,
         'non-cortex_smoothed.stl'
     )
-
-    final_ms.save_current_mesh(output_non_cortex_smoothed)
-
+    ms.save_current_mesh(output_non_cortex_smoothed)
 
 def combine_and_save_brain(input_directory, output_filename):
     """Combine the smoothed cortex and non-cortex meshes."""
