@@ -72,8 +72,6 @@ def combine_non_cortex(input_directory):
 
     ms = pymeshlab.MeshSet()
 
-    # Cerebellum, brainstem, subcortical structures, and corpus callosum.
-    # CSF / ventricular surface aseg.final.14_24 is intentionally excluded.
     non_cortex_files = [
         'aseg.final.7_8_16_46_47.stl',
         'aseg.final.10.stl',
@@ -91,39 +89,58 @@ def combine_non_cortex(input_directory):
         'aseg.final.251_252_253_254_255.stl'
     ]
 
-    # Load all non-cortical structures
     for filename in non_cortex_files:
         ms.load_new_mesh(
             os.path.join(input_directory, filename)
         )
 
-    # Merge everything before smoothing
     ms.apply_filter(
         'generate_by_merging_visible_meshes',
         mergevertices=True
     )
 
-    # Save the merged but unsmoothed non-cortex mesh
     output_non_cortex = os.path.join(
         input_directory,
         'non-cortex.stl'
     )
     ms.save_current_mesh(output_non_cortex)
 
-    # Smooth the entire non-cortex mesh together
-    percentage_delta = pymeshlab.PercentageValue(0.5)
+    # ---------------------------------------------------------
+    # Determine smoothing scale from whole cerebral size rather
+    # than the smaller non-cortex bounding box.
+    # ---------------------------------------------------------
+    reference_ms = pymeshlab.MeshSet()
+    reference_ms.load_new_mesh(
+        os.path.join(input_directory, 'cortex.stl')
+    )
+
+    brain_diagonal = (
+        reference_ms.current_mesh()
+        .bounding_box()
+        .diagonal()
+    )
+
+    # Equivalent to 0.1% of the brain-scale bounding box
+    smoothing_delta = brain_diagonal * 0.001
+
+    print(
+        f"Brain bounding-box diagonal: {brain_diagonal:.2f} mm"
+    )
+    print(
+        f"Non-cortex smoothing delta: {smoothing_delta:.3f} mm"
+    )
 
     ms.apply_filter(
         'apply_coord_laplacian_smoothing_scale_dependent',
         stepsmoothnum=100,
-        delta=percentage_delta
+        delta=pymeshlab.PureValue(smoothing_delta)
     )
 
-    # Save smoothed result
     output_non_cortex_smoothed = os.path.join(
         input_directory,
         'non-cortex_smoothed.stl'
     )
+
     ms.save_current_mesh(output_non_cortex_smoothed)
 
 def combine_and_save_brain(input_directory, output_filename):
