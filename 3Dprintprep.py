@@ -13,8 +13,7 @@ NON_CORTEX_SMOOTHING_STEPS = 100
 # spatial smoothing scale for non-cortical structures.
 #
 # 0.003 = 0.3%
-# If still too faceted, try 0.005.
-NON_CORTEX_SMOOTHING_SCALE = 0.005
+NON_CORTEX_SMOOTHING_SCALE = 0.035
 
 
 # ---------------------------------------------------------
