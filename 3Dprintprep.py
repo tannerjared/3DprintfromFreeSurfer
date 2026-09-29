@@ -111,7 +111,7 @@ def combine_non_cortex(input_directory):
     ms.save_current_mesh(output_non_cortex)
 
     # Smooth the entire non-cortex mesh together
-    percentage_delta = pymeshlab.PercentageValue(0.2)
+    percentage_delta = pymeshlab.PercentageValue(0.5)
 
     ms.apply_filter(
         'apply_coord_laplacian_smoothing_scale_dependent',
