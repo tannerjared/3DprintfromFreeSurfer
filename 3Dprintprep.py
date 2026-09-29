@@ -55,7 +55,7 @@ def combine_non_cortex(input_directory, output_directory):
     # Load specified files for non-cortex
     non_cortex_files = [
         'aseg.final.7_8_16_46_47.stl', 'aseg.final.10.stl', 'aseg.final.11_12_26.stl',
-        'aseg.final.13.stl', 'aseg.final.14_24.stl', 'aseg.final.17.stl', 'aseg.final.18.stl',
+        'aseg.final.13.stl', 'aseg.final.17.stl', 'aseg.final.18.stl',
         'aseg.final.26.stl', 'aseg.final.28.stl', 'aseg.final.49.stl', 'aseg.final.50_51_58.stl',
         'aseg.final.52.stl', 'aseg.final.53.stl', 'aseg.final.54.stl', 'aseg.final.60.stl',
         'aseg.final.251_252_253_254_255.stl'
