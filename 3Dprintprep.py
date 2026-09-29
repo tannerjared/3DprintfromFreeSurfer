@@ -67,7 +67,7 @@ def combine_cortex(input_directory):
     ms.save_current_mesh(output_cortex_smoothed)
 
 
-def combine_non_cortex(input_directory, output_directory):
+def combine_non_cortex(input_directory):
 
     # ---------------------------------------------------------
     # 1. Cerebellum + brainstem: LIGHT smoothing
@@ -88,8 +88,8 @@ def combine_non_cortex(input_directory, output_directory):
         mergevertices=True
     )
 
-    # Much lighter smoothing to preserve cerebellar folia
-    percentage_delta = pymeshlab.Percentage(0.1)
+    # Light smoothing to preserve cerebellar folia
+    percentage_delta = pymeshlab.PercentageValue(0.1)
 
     cerebellum_ms.apply_filter(
         'apply_coord_laplacian_smoothing_scale_dependent',
@@ -97,13 +97,12 @@ def combine_non_cortex(input_directory, output_directory):
         delta=percentage_delta
     )
 
-    cerebellum_output = os.path.join(
+        cerebellum_output = os.path.join(
         input_directory,
         'cerebellum_brainstem_smoothed.stl'
     )
 
     cerebellum_ms.save_current_mesh(cerebellum_output)
-
 
     # ---------------------------------------------------------
     # 2. Other subcortical structures
