@@ -5,7 +5,9 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libgl1 \
+        libopengl0 \
         libglib2.0-0 \
+        libharfbuzz0b \
         libxrender1 \
         libxtst6 && \
     rm -rf /var/lib/apt/lists/*
