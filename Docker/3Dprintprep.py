@@ -93,7 +93,7 @@ def combine_non_cortex(input_directory):
 
     cerebellum_ms.apply_filter(
         'apply_coord_laplacian_smoothing_scale_dependent',
-        stepsmoothnum=20,
+        stepsmoothnum=80,
         delta=percentage_delta
     )
 
