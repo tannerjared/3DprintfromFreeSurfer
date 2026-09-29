@@ -97,7 +97,7 @@ def combine_non_cortex(input_directory):
         delta=percentage_delta
     )
 
-        cerebellum_output = os.path.join(
+    cerebellum_output = os.path.join(
         input_directory,
         'cerebellum_brainstem_smoothed.stl'
     )
