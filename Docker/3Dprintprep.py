@@ -14,7 +14,7 @@ NON_CORTEX_SMOOTHING_ITERATIONS = 30
 # Lower = more smoothing.
 # Start at 0.05.
 # If still blocky: 0.02, then 0.01.
-NON_CORTEX_PASSBAND = 0.01
+NON_CORTEX_PASSBAND = 0.2
 
 # ---------------------------------------------------------
 # Check if the required packages are installed
