@@ -81,7 +81,6 @@ def combine_non_cortex(input_directory):
         'aseg.final.13.stl',
         'aseg.final.17.stl',
         'aseg.final.18.stl',
-        'aseg.final.26.stl',
         'aseg.final.28.stl',
         'aseg.final.49.stl',
         'aseg.final.50_51_58.stl',
