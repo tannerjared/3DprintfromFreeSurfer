@@ -5,16 +5,16 @@ import argparse
 # ---------------------------------------------------------
 # Smoothing parameters
 # ---------------------------------------------------------
+
 CORTEX_SMOOTHING_STEPS = 100
 
-NON_CORTEX_SMOOTHING_STEPS = 100
+# VTK windowed-sinc smoothing for non-cortical structures
+NON_CORTEX_SMOOTHING_ITERATIONS = 30
 
-# Fraction of the whole-brain bounding-box diagonal used as the
-# spatial smoothing scale for non-cortical structures.
-#
-# 0.003 = 0.3%
-NON_CORTEX_SMOOTHING_SCALE = 0.02
-
+# Lower = more smoothing.
+# Start at 0.05.
+# If still blocky: 0.02, then 0.01.
+NON_CORTEX_PASSBAND = 0.05
 
 # ---------------------------------------------------------
 # Check if the required packages are installed
@@ -46,6 +46,60 @@ def convert_vtk_to_stl(input_filename, output_filename):
     stl_writer.SetInputConnection(vtk_to_stl.GetOutputPort())
     stl_writer.Write()
 
+def smooth_stl_windowed_sinc(
+    input_filename,
+    output_filename,
+    iterations=30,
+    passband=0.05
+):
+    """
+    Smooth an STL using VTK windowed-sinc smoothing.
+
+    This is intended to reduce voxel/marching-cubes stair-step artifacts
+    while preserving overall surface geometry better than repeated
+    Laplacian smoothing.
+    """
+
+    # Read STL
+    reader = vtk.vtkSTLReader()
+    reader.SetFileName(input_filename)
+    reader.Update()
+
+    # Clean duplicate/coincident points
+    cleaner = vtk.vtkCleanPolyData()
+    cleaner.SetInputConnection(reader.GetOutputPort())
+    cleaner.Update()
+
+    # Ensure triangular polygons
+    triangulate = vtk.vtkTriangleFilter()
+    triangulate.SetInputConnection(cleaner.GetOutputPort())
+    triangulate.Update()
+
+    # Windowed-sinc smoothing
+    smoother = vtk.vtkWindowedSincPolyDataFilter()
+    smoother.SetInputConnection(triangulate.GetOutputPort())
+
+    smoother.SetNumberOfIterations(iterations)
+    smoother.SetPassBand(passband)
+
+    # Better numerical stability
+    smoother.NormalizeCoordinatesOn()
+
+    # Allow smoothing across the voxel-derived mesh
+    smoother.FeatureEdgeSmoothingOff()
+    smoother.BoundarySmoothingOn()
+    smoother.NonManifoldSmoothingOn()
+
+    # Nuttall is VTK's recommended window
+    smoother.SetWindowFunctionToNuttall()
+
+    smoother.Update()
+
+    # Write smoothed STL
+    writer = vtk.vtkSTLWriter()
+    writer.SetFileName(output_filename)
+    writer.SetInputConnection(smoother.GetOutputPort())
+    writer.Write()
 
 def combine_cortex(input_directory):
     """Combine left and right pial surfaces and create a smoothed cortex."""
@@ -99,9 +153,8 @@ def combine_non_cortex(input_directory):
     ms = pymeshlab.MeshSet()
 
     # Cerebellum, brainstem, subcortical structures, and corpus callosum.
-    #
-    # aseg.final.14_24.stl is intentionally excluded because label 24
-    # contains CSF and can produce an unwanted shell around the cortex.
+    # aseg.final.14_24.stl is intentionally excluded because it contains
+    # CSF and can generate an unwanted shell around the cortex.
     non_cortex_files = [
         "aseg.final.7_8_16_46_47.stl",
         "aseg.final.10.stl",
@@ -121,20 +174,20 @@ def combine_non_cortex(input_directory):
 
     # Load all non-cortical structures
     for filename in non_cortex_files:
-        file_path = os.path.join(
-            input_directory,
-            filename
+        ms.load_new_mesh(
+            os.path.join(
+                input_directory,
+                filename
+            )
         )
 
-        ms.load_new_mesh(file_path)
-
-    # Merge all non-cortical structures before smoothing
+    # Merge everything first
     ms.apply_filter(
         "generate_by_merging_visible_meshes",
         mergevertices=True
     )
 
-    # Save merged but unsmoothed non-cortex mesh
+    # Save merged unsmoothed non-cortex mesh
     output_non_cortex = os.path.join(
         input_directory,
         "non-cortex.stl"
@@ -142,77 +195,23 @@ def combine_non_cortex(input_directory):
 
     ms.save_current_mesh(output_non_cortex)
 
-    # ---------------------------------------------------------
-    # Determine smoothing scale using whole-brain size
-    # ---------------------------------------------------------
-    #
-    # The non-cortex mesh has a much smaller bounding box than
-    # the entire brain. Using its own PercentageValue therefore
-    # results in relatively weak smoothing.
-    #
-    # Instead, use the cortex bounding-box diagonal as the
-    # reference size and convert the smoothing scale to an
-    # absolute PureValue.
-    # ---------------------------------------------------------
-
-    reference_ms = pymeshlab.MeshSet()
-
-    reference_ms.load_new_mesh(
-        os.path.join(
-            input_directory,
-            "cortex.stl"
-        )
-    )
-
-    brain_diagonal = (
-        reference_ms
-        .current_mesh()
-        .bounding_box()
-        .diagonal()
-    )
-
-    smoothing_delta = (
-        brain_diagonal
-        * NON_CORTEX_SMOOTHING_SCALE
-    )
-
-    print(
-        f"Brain bounding-box diagonal: "
-        f"{brain_diagonal:.2f} mm"
-    )
-
-    print(
-        f"Non-cortex smoothing scale: "
-        f"{NON_CORTEX_SMOOTHING_SCALE:.4f}"
-    )
-
-    print(
-        f"Non-cortex smoothing delta: "
-        f"{smoothing_delta:.3f} mm"
-    )
-
-    print(
-        f"Non-cortex smoothing steps: "
-        f"{NON_CORTEX_SMOOTHING_STEPS}"
-    )
-
-    # Smooth all non-cortical structures together
-    ms.apply_filter(
-        "apply_coord_laplacian_smoothing_scale_dependent",
-        stepsmoothnum=NON_CORTEX_SMOOTHING_STEPS,
-        delta=pymeshlab.PureValue(
-            smoothing_delta
-        )
-    )
-
-    # Save smoothed result
+    # Destination for windowed-sinc smoothed mesh
     output_non_cortex_smoothed = os.path.join(
         input_directory,
         "non-cortex_smoothed.stl"
     )
 
-    ms.save_current_mesh(
-        output_non_cortex_smoothed
+    print(
+        "Applying VTK windowed-sinc smoothing "
+        f"({NON_CORTEX_SMOOTHING_ITERATIONS} iterations, "
+        f"passband={NON_CORTEX_PASSBAND})..."
+    )
+
+    smooth_stl_windowed_sinc(
+        output_non_cortex,
+        output_non_cortex_smoothed,
+        iterations=NON_CORTEX_SMOOTHING_ITERATIONS,
+        passband=NON_CORTEX_PASSBAND
     )
 
 
