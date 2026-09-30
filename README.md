@@ -9,12 +9,10 @@ The workflow is:
 3. Run `3Dprintprep.py` or its container once per subject to create a combined STL.
 4. Inspect and repair the mesh, choose its orientation and size, and prepare it in your printer's slicing software.
 
-**For PSY4930 students on HiPerGator:** use the [complete student workflow](#hipergator-student-workflow) below. It uses the shared containers and processes the two course subjects.
-
 ## Before you start
 
 - You need **completed FreeSurfer subject directories**, not just the original MRI files. A T1 NIfTI or T1 DICOM series can be used for the earlier FreeSurfer processing step. See the [FreeSurfer documentation](https://surfer.nmr.mgh.harvard.edu/fswiki) for installation and reconstruction instructions.
-- FreeSurfer must be available to the environment running FSQC's shape analysis, with a valid license. The student example uses `freesurfer/7.4.1`; use the appropriate installed version elsewhere.
+- FreeSurfer must be available to the environment running FSQC's shape analysis, with a valid license.
 - Choose how to run FSQC and how to run the STL conversion. These are **two separate tools**: the `3dprintprep` container converts existing surfaces; it does not run FreeSurfer reconstruction or FSQC.
 - The conversion writes intermediate STL files into the input `surfaces` directory. You need write access there as well as to the final output directory.
 
@@ -69,12 +67,10 @@ fsqc.run_fsqc(
 
 ### Option B: Run an Apptainer/Singularity `.sif` container
 
-On HiPerGator, the course provides `/blue/psy4930/share/data/neurotools/fsqc.sif`. The [student script](#hipergator-student-workflow) shows the complete invocation, including the FreeSurfer installation and license mounts needed for shape analysis. Students using that shared image do not need to install FSQC with `pip` or build another image.
-
-Outside the course, you can create your own FSQC image using the [upstream container instructions](https://github.com/Deep-MI/fsqc/blob/dev/singularity/Singularity.md). An example using the upstream Docker image as the base is:
+You can create your own FSQC image using the [upstream container instructions](https://github.com/Deep-MI/fsqc/blob/dev/singularity/Singularity.md). An example using the upstream Docker image as the base is:
 
 ```bash
-apptainer build fsqc.sif docker://deepmi/fsqcdocker:latest
+apptainer build fsqc.sif docker://deepmi/fsqcdocker:2.1.7
 ```
 
 That creates an FSQC image, but **does not add FreeSurfer**. For `--shape`, you must also provide a compatible Linux FreeSurfer installation, its environment, and its license inside the container. Use the course script's bind-and-environment pattern as an example, adapting every host path. This build command does not establish how the instructor's shared `.sif` was built or which version it contains.
@@ -121,8 +117,6 @@ python 3Dprintprep.py \
     ./fsqc_out/sub-001.stl
 ```
 
-**The current script takes two positional arguments:** the input surfaces directory and the final STL filename. Older examples using `--i` and `--o` do not match the current script.
-
 ### Option B: Run the conversion with Docker
 
 Run this from the directory containing `fsqc_out`:
@@ -167,150 +161,7 @@ The script converts VTK files to STL, combines and smooths the left/right pial s
 
 Intermediate files stay in the input `surfaces` directory, including `cortex.stl`, `cortex_smoothed.stl`, `non-cortex.stl`, and `non-cortex_smoothed.stl`. The combined brain is saved to the output filename you supplied. Merging meshes does not guarantee a watertight, printable solid; inspect the result before printing.
 
-## HiPerGator student workflow
-
-This example follows the PSY4930 Module 4 assignment. It uses the FreeSurfer results from Module 3 and creates one combined STL per subject: **two STL files** for the default subject list, or one if you select only one subject.
-
-### Copy and edit the script
-
-The course script is available in `/blue/psy4930/share/data/Module4`. **Copy it; do not move it.** Save your copy in your own course directory, edit it, and submit that copy. You can also save the script below as `3dprintprep-student.sh`.
-
-Before submitting:
-
-- Change `USER@ufl.edu` to your email address and `your_username` to your GatorLink username.
-- Check `BASE_DIR` against your actual Module 3 FreeSurfer results. Keep `sub-6367` and `sub-6303` for the assignment unless instructed otherwise.
-- Keep `--account=psy4930` and `--qos=psy4930` for the course allocation. For another project, use an account/QOS you are authorized to use and update the data/container paths. These settings are course-specific.
-- The 8 GB memory request and 40-minute time limit come from the student example. Adjust them for larger workloads and your allocation's limits.
-
-| Setting | Course path or value |
-| --- | --- |
-| Shared script directory | `/blue/psy4930/share/data/Module4` |
-| FreeSurfer results | `/blue/psy4930/share/students/${USERNAME}/Module3/ADNI_bids/derivatives/freesurfer` |
-| Output directory | `${BASE_DIR}/3dprint` |
-| FSQC image | `/blue/psy4930/share/data/neurotools/fsqc.sif` |
-| Conversion image | `/blue/psy4930/share/data/neurotools/3dprintprep.sif` |
-| FreeSurfer module | `freesurfer/7.4.1` |
-| FreeSurfer license | `/apps/freesurfer/license/license.txt` |
-| Slurm account and QOS | `psy4930` |
-
-These shared paths are provided by the course; they are not files distributed in this repository. Verify that they are available in your course environment.
-
-### Complete Slurm script
-
-This version retains the course paths and allocation settings, uses a subject array, and stops if a command fails or an expected output is missing.
-
-```bash
-#!/bin/bash
-#SBATCH --job-name=3dprintprep-student
-#SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=USER@ufl.edu
-#SBATCH --ntasks=1
-#SBATCH --mem=8gb
-#SBATCH --time=00:40:00
-#SBATCH --account=psy4930
-#SBATCH --qos=psy4930
-#SBATCH --output=3dprintprep_%j.log
-
-set -eo pipefail
-
-pwd; hostname; date
-
-# STUDENT CONFIGURATION: edit your email above and the values below.
-USERNAME="your_username"
-SUBJECTS=(sub-6367 sub-6303)
-BASE_DIR="/blue/psy4930/share/students/${USERNAME}/Module3/ADNI_bids/derivatives/freesurfer"
-
-OUT_DIR="${BASE_DIR}/3dprint"
-FS_LICENSE_PATH="/apps/freesurfer/license/license.txt"
-FSQC_IMAGE="/blue/psy4930/share/data/neurotools/fsqc.sif"
-PRINT_IMAGE="/blue/psy4930/share/data/neurotools/3dprintprep.sif"
-
-cd "$BASE_DIR" || { echo "ERROR: Could not find $BASE_DIR"; exit 1; }
-mkdir -p "$OUT_DIR"
-
-module load apptainer
-module load freesurfer/7.4.1
-
-for FILE in "$FS_LICENSE_PATH" "$FSQC_IMAGE" "$PRINT_IMAGE"; do
-    [ -r "$FILE" ] || { echo "ERROR: Cannot read $FILE"; exit 1; }
-done
-for SUBJ in "${SUBJECTS[@]}"; do
-    [ -d "${BASE_DIR}/${SUBJ}" ] || {
-        echo "ERROR: Missing FreeSurfer subject directory: ${BASE_DIR}/${SUBJ}"
-        exit 1
-    }
-done
-
-echo "Step 1: Running FSQC and generating shape surfaces..."
-
-# Mount the host FreeSurfer installation and its license into FSQC.
-# /apps is required so the container can read FS_LICENSE_PATH.
-apptainer run \
-    --env FREESURFER_HOME=/opt/freesurfer \
-    --env "FS_LICENSE=${FS_LICENSE_PATH}" \
-    --env "PATH=/opt/freesurfer/bin:$PATH" \
-    -B "$PWD":/in \
-    -B "$OUT_DIR":/out \
-    -B /apps \
-    -B "$FREESURFER_HOME":/opt/freesurfer \
-    "$FSQC_IMAGE" \
-    --subjects_dir /in \
-    --subjects "${SUBJECTS[@]}" \
-    --output_dir /out \
-    --shape
-
-echo "Step 2: Converting each subject's surfaces to STL..."
-
-for SUBJ in "${SUBJECTS[@]}"; do
-    SURF_DIR="${OUT_DIR}/brainprint/${SUBJ}/surfaces"
-    [ -d "$SURF_DIR" ] || {
-        echo "ERROR: Missing $SURF_DIR; check the FSQC log/output."
-        exit 1
-    }
-
-    apptainer run \
-        -B "$SURF_DIR":/in \
-        -B "$OUT_DIR":/out \
-        "$PRINT_IMAGE" \
-        /in \
-        "/out/${SUBJ}.stl"
-
-    [ -s "${OUT_DIR}/${SUBJ}.stl" ] || {
-        echo "ERROR: No nonempty STL created for ${SUBJ}."
-        exit 1
-    }
-done
-
-# The original assignment uses the following command for group access.
-# Uncomment it if your course requires this sharing permission:
-# chmod -R 775 "$OUT_DIR"
-
-echo "Processing complete. Check ${OUT_DIR} for your .stl files."
-date
-```
-
-The FreeSurfer bind exposes the loaded host installation as `/opt/freesurfer` inside FSQC. The `FREESURFER_HOME`, `FS_LICENSE`, and `PATH` settings tell the container where to find that installation and license. Keep these mounts when using this course workflow.
-
-### Submit and check the results
-
-From your own working directory on `/blue`, submit your edited script:
-
-```bash
-sbatch 3dprintprep-student.sh
-```
-
-Check `3dprintprep_<jobID>.log` in the submission directory. Successful output for the default subjects is:
-
-```text
-${BASE_DIR}/3dprint/sub-6367.stl
-${BASE_DIR}/3dprint/sub-6303.stl
-```
-
-The VTK files and intermediate STL files remain under `${BASE_DIR}/3dprint/brainprint/<subject>/surfaces/`. Follow the course's group-access requirements if the instructor needs to inspect your results.
-
-You can also run the steps interactively for practice, but do the processing in a scheduled compute-node session. See [HiPerGator computation guidance](https://help.rc.ufl.edu/doc/HPG_Computation); submit the script with `sbatch` for the batch workflow.
-
-## 3. Inspect and prepare the model for printing
+## 1. Inspect and prepare the model for printing
 
 Import the combined STL into your preferred 3D modeling or mesh-repair software. Check for missing structures, unwanted shells, disconnected pieces, and mesh errors. Repair the model as needed, confirm its size, and choose an orientation before slicing it for your printer.
 
