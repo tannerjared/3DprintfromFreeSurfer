@@ -151,7 +151,7 @@ apptainer run \
     /in /out/sub-001.stl
 ```
 
-If your system uses Singularity, replace `apptainer` with `singularity`. On HiPerGator, use Apptainer and follow [UF Research Computing's container guidance](https://docs.rc.ufl.edu/software/apps/apptainer/usage/).
+If your system uses Singularity, replace `apptainer` with `singularity`.
 
 Published `latest` images and existing `.sif` files may contain a different script version from your checkout. Record the versions you use; rebuilding or replacing a `.sif` is a separate step from updating repository code.
 
