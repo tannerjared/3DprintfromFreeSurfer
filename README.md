@@ -157,9 +157,9 @@ Published `latest` images and existing `.sif` files may contain a different scri
 
 ### What the converter creates
 
-The script converts VTK files to STL, combines and smooths the left/right pial surfaces, combines and smooths the selected non-cortical structures, and merges the smoothed meshes into the final brain STL. The current code excludes `aseg.final.14_24` from the combined model because it contains CSF and can create an unwanted shell.
+The script converts VTK files to STL, combines and smooths the left/right pial surfaces, combines and smooths the selected non-cortical structures, and merges the smoothed meshes into the final brain STL.
 
-Intermediate files stay in the input `surfaces` directory, including `cortex.stl`, `cortex_smoothed.stl`, `non-cortex.stl`, and `non-cortex_smoothed.stl`. The combined brain is saved to the output filename you supplied. Merging meshes does not guarantee a watertight, printable solid; inspect the result before printing.
+Intermediate files stay in the input `surfaces` directory, including `cortex.stl`, `cortex_smoothed.stl`, `non-cortex.stl`, and `non-cortex_smoothed.stl`. The combined brain is saved to the output filename you supplied. Merging meshes does not guarantee a watertight, printable solid; inspect the result before printing. The developer of this script has not had issues with printing different brains, however.
 
 ## 1. Inspect and prepare the model for printing
 
