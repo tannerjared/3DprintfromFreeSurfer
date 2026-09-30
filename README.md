@@ -21,7 +21,7 @@ pip install --install-option="--prefix=/some/path/" package_name
 
 ## Steps to run
 1. Process a brain MRI using FreeSufer (version >7.4 is best). This can be done from a T1 NIfTI or from the T1 DICOM files.
-3. Run FSQC with the --shape flag. An example looks like this (this runs on one subject, if you want this for all processed subjects, leave off the --subjects flag)
+3. Run FSQC (https://github.com/Deep-MI/fsqc) with the --shape flag. An example looks like this (this runs on one subject, if you want this for all processed subjects, leave off the --subjects flag)
    ```
    run_fsqc --subjects_dir ./fs_subjects --subjects jt2021 --output_dir ./fsqc_out --shape
    ```
