@@ -175,7 +175,3 @@ One approach used for this workflow is to import the STL into **3D Builder on Wi
 - **Permission errors:** both the input surfaces directory and output directory must be writable. Copy course scripts to your own directory before editing them.
 - **Python package or smoothing errors:** compare your environment with the current Dockerfile, or use a matching conversion container. An older shared image may behave differently from the current script.
 - **Job fails or runs out of time/memory:** read the Slurm log before resubmitting and adjust resources as needed. An STL file's existence is not a substitute for visually checking it.
-
-## Video walkthrough: older instructions
-
-The [Preparing for 3D Printing video](https://youtu.be/ROm5F_075ac) shows both interactive processing and a script-based approach; the script appears in the last part of the video. **The video is dated.** Use it for background and a demonstration of the overall process, and use this README and your current course script for commands, package versions, container paths, and account settings.
